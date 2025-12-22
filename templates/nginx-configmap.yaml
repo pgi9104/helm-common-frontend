@@ -1,0 +1,37 @@
+{{- if .Values.nginx.customConfigEnabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-nginx-config
+data:
+  default.conf: |
+    server {
+        listen {{ .Values.service.port }};
+        server_name {{ .Values.ingress.host | default "_" }};
+
+        root /usr/share/nginx/html;
+        index index.html index.htm;
+
+        # Vue Router history mode 지원
+        location / {
+            try_files $uri $uri/ /index.html;
+        }
+
+        # 프론트엔드 환경 변수 주입 (선택 사항)
+        # location /env.js {
+        #   add_header Content-Type application/javascript;
+        #   return 200 '
+        #     window.runtimeEnv = {
+        #       {{- range $key, $value := .Values.env.runtime }}
+        #       "{{ $key }}": "{{ $value }}",
+        #       {{- end }}
+        #     };
+        #   ';
+        # }
+
+        # 추가적인 Nginx 설정 (values.yaml에서 주입)
+        {{- if .Values.nginx.extraConfig }}
+        {{ .Values.nginx.extraConfig | nindent 8 }}
+        {{- end }}
+    }
+{{- end }}

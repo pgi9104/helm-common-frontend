@@ -1,0 +1,42 @@
+replicaCount: 1
+
+image:
+  repository: "" # 서비스별로 입력받음 (예: harbor.gyuil.synology.me/myapp/vue-main)
+  tag: "latest"
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 80 # Nginx 기본 포트
+
+ingress:
+  enabled: true
+  className: "nginx" # 사용 중인 Ingress Controller 클래스명
+  host: "my-frontend.example.com" # 서비스별 도메인
+  path: "/" # 일반적으로 프론트엔드는 루트 경로
+
+nginx:
+  # Vue Router history 모드를 위한 설정 등 Nginx 커스텀 설정 필요 여부
+  customConfigEnabled: true 
+  # 추가적인 Nginx 설정 파일 (ConfigMap으로 주입)
+  # templates/nginx-configmap.yaml 에서 사용됨
+  extraConfig: |
+    location /api/ {
+      proxy_pass http://backend-service:8080/;
+    }
+
+env:
+  # 프론트엔드 빌드 시점에 주입될 환경 변수 (Dotenv 등)
+  # buildTime:
+  #   VUE_APP_API_URL: "https://api.example.com"
+  # 런타임에 주입될 환경 변수 (Nginx ConfigMap이나 Deployment env)
+  runtime:
+    API_BASE_URL: "/api"
+
+resources:
+  limits:
+    cpu: 300m
+    memory: 256Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
