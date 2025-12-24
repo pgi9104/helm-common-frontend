@@ -3,14 +3,20 @@ replicaCount: 1
 image:
   repository: "" # 서비스별로 입력받음 (예: harbor.gyuil.synology.me/myapp/vue-main)
   tag: "latest"
-  pullPolicy: IfNotPresent
+  pullPolicy: Always
 
 service:
   type: ClusterIP
   port: 80 # Nginx 기본 포트
+  targetPort: 8080
 
-ingress:
+externalSecret:
   enabled: true
+  vaultPath: ""      # 서비스별 Vault 경로
+  secretStoreName: "cluster-secret-store"
+  
+ingress:
+  enabled: false
   className: "nginx" # 사용 중인 Ingress Controller 클래스명
   host: "my-frontend.example.com" # 서비스별 도메인
   path: "/" # 일반적으로 프론트엔드는 루트 경로
@@ -23,7 +29,7 @@ nginx:
   extraConfig: |
     location /api/ {
       proxy_pass http://backend-service:8080/;
-    }
+    } 
 
 env:
   # 프론트엔드 빌드 시점에 주입될 환경 변수 (Dotenv 등)
