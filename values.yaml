@@ -8,13 +8,13 @@ image:
 service:
   type: ClusterIP
   port: 80 # Nginx 기본 포트
-  targetPort: 8080
+  targetPort: 80
 
 externalSecret:
   enabled: true
   vaultPath: ""      # 서비스별 Vault 경로
   secretStoreName: "cluster-secret-store"
-  
+
 ingress:
   enabled: false
   className: "nginx" # 사용 중인 Ingress Controller 클래스명
@@ -22,14 +22,14 @@ ingress:
   path: "/" # 일반적으로 프론트엔드는 루트 경로
 
 nginx:
-  # Vue Router history 모드를 위한 설정 등 Nginx 커스텀 설정 필요 여부
-  customConfigEnabled: true 
-  # 추가적인 Nginx 설정 파일 (ConfigMap으로 주입)
-  # templates/nginx-configmap.yaml 에서 사용됨
+  customConfigEnabled: false 
   extraConfig: |
+    # 들여쓰기를 최소화하여 작성 (nindent 8이 처리해줌)
     location /api/ {
-      proxy_pass http://backend-service:8080/;
-    } 
+        proxy_pass http://backend-service:8080/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
 
 env:
   # 프론트엔드 빌드 시점에 주입될 환경 변수 (Dotenv 등)

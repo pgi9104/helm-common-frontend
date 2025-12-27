@@ -2,27 +2,28 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: {{ .Release.Name }}
+  name: {{ .Release.Name }}-ingress
   annotations:
-    kubernetes.io/ingress.class: {{ .Values.ingress.className }}
-    # SSL/TLS 적용을 위한 cert-manager annotation (선택 사항)
-    # cert-manager.io/cluster-issuer: "letsencrypt-prod" 
+    {{- toYaml .Values.ingress.annotations | nindent 4 }}
 spec:
+  ingressClassName: {{ .Values.ingress.className }}
+  {{- if .Values.ingress.tls }}
+  tls:
+    {{- toYaml .Values.ingress.tls | nindent 4 }}
+  {{- end }}
   rules:
-    - host: {{ .Values.ingress.host }}
+    {{- range .Values.ingress.hosts }}
+    - host: {{ .host | quote }}
       http:
         paths:
-          - path: {{ .Values.ingress.path }}
-            pathType: Prefix
+          {{- range .paths }}
+          - path: {{ .path }}
+            pathType: {{ .pathType }}
             backend:
               service:
-                name: {{ .Release.Name }}
+                name: {{ $.Release.Name }} # 서비스 이름과 일치해야 함
                 port:
-                  number: {{ .Values.service.port }}
-  {{- if .Values.ingress.tlsEnabled }}
-  tls:
-    - hosts:
-        - {{ .Values.ingress.host }}
-      secretName: {{ .Release.Name }}-tls # TLS Secret 이름
-  {{- end }}
+                  number: {{ $.Values.service.port }}
+          {{- end }}
+    {{- end }}
 {{- end }}

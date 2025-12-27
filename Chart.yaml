@@ -2,4 +2,4 @@ apiVersion: v2
 name: common-frontend
 description: "Vue/React 프론트엔드 공통 배포 템플릿 (Nginx 기반)"
 type: application
-version: 1.0.2 # 이 버전을 나중에 프론트엔드 서비스들이 참조합니다.
+version: 1.0.8 # 이 버전을 나중에 프론트엔드 서비스들이 참조합니다.
